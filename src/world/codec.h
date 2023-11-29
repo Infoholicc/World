@@ -39,6 +39,23 @@ void CodeAperiodicity(const double * const *aperiodicity, int f0_length,
   int fs, int fft_size, double **coded_aperiodicity);
 
 //-----------------------------------------------------------------------------
+// CodeNAperiodicity codes the aperiodicity. The number of dimensions is
+// determined passed manually.
+//
+// Input:
+//   aperiodicity       : Aperiodicity before coding
+//   f0_length          : Length of F0 contour
+//   fs                 : Sampling frequency
+//   fft_size           : FFT size
+//   bins               : Coded dimensions
+//
+// Output:
+//   coded_aperiodicity : Coded aperiodicity
+//-----------------------------------------------------------------------------
+void CodeNAperiodicity(const double * const *aperiodicity, int f0_length,
+  int fs, int fft_size, int bins, double **coded_aperiodicity);
+
+//-----------------------------------------------------------------------------
 // DecodeAperiodicity decodes the coded aperiodicity.
 //
 // Input:
@@ -52,6 +69,22 @@ void CodeAperiodicity(const double * const *aperiodicity, int f0_length,
 //-----------------------------------------------------------------------------
 void DecodeAperiodicity(const double * const *coded_aperiodicity,
   int f0_length, int fs, int fft_size, double **aperiodicity);
+
+//-----------------------------------------------------------------------------
+// DecodeNAperiodicity decodes the coded aperiodicity of N bins.
+//
+// Input:
+//   coded_aperiodicity : Coded aperiodicity
+//   f0_length          : Length of F0 contour
+//   fs                 : Sampling frequency
+//   fft_size           : FFT size
+//   bins               : Coded dimensions
+//
+// Output:
+//   aperiodicity       : Decoded aperiodicity
+//-----------------------------------------------------------------------------
+void DecodeNAperiodicity(const double * const *coded_aperiodicity,
+  int f0_length, int fs, int fft_size, int bins, double **aperiodicity);
 
 //-----------------------------------------------------------------------------
 // CodeSpectralEnvelope codes the spectral envelope.

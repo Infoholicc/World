@@ -217,8 +217,16 @@ int GetNumberOfAperiodicities(int fs) {
 void CodeAperiodicity(const double * const *aperiodicity, int f0_length,
     int fs, int fft_size, double **coded_aperiodicity) {
   int number_of_aperiodicities = GetNumberOfAperiodicities(fs);
-  double *coarse_frequency_axis = new double[number_of_aperiodicities];
-  for (int i = 0; i < number_of_aperiodicities; ++i)
+
+  CodeNAperiodicity(aperiodicity, f0_length,
+    fs, fft_size, number_of_aperiodicities, coded_aperiodicity);
+  
+}
+
+void CodeNAperiodicity(const double * const *aperiodicity, int f0_length,
+    int fs, int fft_size, int bins, double **coded_aperiodicity) {
+  double *coarse_frequency_axis = new double[bins];
+  for (int i = 0; i < bins; ++i)
     coarse_frequency_axis[i] = world::kFrequencyInterval * (i + 1.0);
 
   double *log_aperiodicity = new double[fft_size / 2 + 1];
@@ -227,7 +235,7 @@ void CodeAperiodicity(const double * const *aperiodicity, int f0_length,
     for (int j = 0; j < fft_size / 2 + 1; ++j)
       log_aperiodicity[j] = 20 * log10(aperiodicity[i][j]);
     interp1Q(0, static_cast<double>(fs) / fft_size, log_aperiodicity,
-        fft_size / 2 + 1, coarse_frequency_axis, number_of_aperiodicities,
+        fft_size / 2 + 1, coarse_frequency_axis, bins,
         coded_aperiodicity[i]);
   }
 
@@ -237,27 +245,35 @@ void CodeAperiodicity(const double * const *aperiodicity, int f0_length,
 
 void DecodeAperiodicity(const double * const *coded_aperiodicity,
     int f0_length, int fs, int fft_size, double **aperiodicity) {
-  InitializeAperiodicity(f0_length, fft_size, aperiodicity);
   int number_of_aperiodicities = GetNumberOfAperiodicities(fs);
+
+  DecodeNAperiodicity(coded_aperiodicity,
+    f0_length, fs, fft_size, number_of_aperiodicities, aperiodicity);
+  
+}
+
+void DecodeNAperiodicity(const double * const *coded_aperiodicity,
+    int f0_length, int fs, int fft_size, int bins, double **aperiodicity) {
+  InitializeAperiodicity(f0_length, fft_size, aperiodicity);
   double *frequency_axis = new double[fft_size / 2 + 1];
   for (int i = 0; i <= fft_size / 2; ++i)
     frequency_axis[i] = static_cast<double>(fs) / fft_size * i;
 
-  double *coarse_frequency_axis = new double[number_of_aperiodicities + 2];
-  for (int i = 0; i <= number_of_aperiodicities; ++i)
+  double *coarse_frequency_axis = new double[bins + 2];
+  for (int i = 0; i <= bins; ++i)
     coarse_frequency_axis[i] = i * world::kFrequencyInterval;
-  coarse_frequency_axis[number_of_aperiodicities + 1] = fs / 2.0;
+  coarse_frequency_axis[bins + 1] = fs / 2.0;
 
-  double *coarse_aperiodicity = new double[number_of_aperiodicities + 2];
+  double *coarse_aperiodicity = new double[bins + 2];
   coarse_aperiodicity[0] = -60.0;
-  coarse_aperiodicity[number_of_aperiodicities + 1] =
+  coarse_aperiodicity[bins + 1] =
     -world::kMySafeGuardMinimum;
 
   for (int i = 0; i < f0_length; ++i) {
-    if (CheckVUV(coded_aperiodicity[i], number_of_aperiodicities,
+    if (CheckVUV(coded_aperiodicity[i], bins,
       coarse_aperiodicity) == 1) continue;
     GetAperiodicity(coarse_frequency_axis, coarse_aperiodicity,
-        number_of_aperiodicities, frequency_axis, fft_size, aperiodicity[i]);
+        bins, frequency_axis, fft_size, aperiodicity[i]);
   }
 
   delete[] coarse_aperiodicity;
